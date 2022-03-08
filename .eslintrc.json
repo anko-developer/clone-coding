@@ -1,0 +1,14 @@
+{
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2020": true //2020-12-03 기준 2021은 eslint가 안되는 오류가 있다
+  },
+  "parser": "babel-eslint",
+  "extends": ["eslint:recommended", "airbnb-base", "prettier"], //airbnb-base 포맷 사용
+  "parserOptions": {
+    "ecmaVersion": 11, //es2020
+    "sourceType": "module"
+  },
+  "rules": {}
+}
