@@ -1,0 +1,39 @@
+// global nav
+.global-nav {
+  height: 44px;
+}
+
+.global-nav-links,
+.local-nav-links {
+  display: flex;
+  align-items: center;
+  max-width: 1000px;
+  height: 100%;
+  margin: 0 auto;
+}
+
+.global-nav-links {
+  justify-content: space-between;
+}
+
+// local nav
+.local-nav {
+  height: 52px;
+  border-bottom: 1px solid #ddd;
+}
+
+.local-nav-links {
+  a {
+    font-size: 1.1rem;
+
+    &.product-name {
+      margin-right: auto;
+      font-weight: 700;
+      font-size: 1.9rem;
+    }
+
+    &:not(.product-name) {
+      margin-left: 2rem;
+    }
+  }
+}
