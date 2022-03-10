@@ -12,8 +12,10 @@ body {
   overflow-x: hidden;
   overflow-wrap: break-word;
   -webkit-font-smoothing: antialiased;
-  font-family: "Apple SD Gothic Neo", Roboto, "Noto Sans KR", NanumGothic,
-    "Malgun Gothic", sans-serif;
+  // font-family: 'Apple SD Gothic Neo', Roboto, 'Noto Sans KR', NanumGothic,
+  //   'Malgun Gothic', sans-serif;
+  font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', Roboto, 'Malgun Gothic',
+    sans-serif;
   font-size: 1.6rem;
   letter-spacing: -0.05em;
   color: rgb(29, 29, 31);
