@@ -1,9 +1,9 @@
-require("./assets/scss/index.scss"); //sass 연결
+require('./assets/scss/index.scss'); //sass 연결
 
 // const $ = require('jquery');
-const DOM = {
-  body: "#Body",
-};
+// const DOM = {
+//   body: "#Body",
+// };
 
 // $(DOM.body).append('<p>Webpack</p>');
 // $(DOM.body).addClass('__block');
