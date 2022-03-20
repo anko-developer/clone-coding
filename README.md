@@ -1,6 +1,6 @@
 # CloneCoding() {
 
-_Is explain_
+_Hi, introduce the repository._
 
 > Apple Clone Coding
 > ([anko-developer](https://github.com/anko-developer))
@@ -8,7 +8,7 @@ _Is explain_
 ## Table of Contents
 
 1. [Clean Coding](#clean-coding)
-1. [Types](#types)
+1. [Repo Name](#repository-name)
 
 ## Clean Coding
 
@@ -23,6 +23,13 @@ _Is explain_
   깨끗하게, 변경이 쉽게, 유지보수 용이하게 (O)
   필요하지 않는 기능, 사용하지 않는 기능, 지나치게 미래지향적 (X)
   ```
+
+## Repository Name
+
+- 소문자를 사용해라 (use lower case)
+- 대시(-)를 사용해라 (use dashes)
+- 명확하게 작성해라 (be specific)
+- 일관성있게 작성해라 (be consistent)
 
 **[⬆ back to top](#table-of-contents)**
 
