@@ -1,4 +1,4 @@
-require('./assets/scss/index.scss'); //sass 연결
+require('./assets/scss/index.scss');
 
 // const DOM = {
 //   body: "#Body",
@@ -7,10 +7,6 @@ require('./assets/scss/index.scss'); //sass 연결
 // $(DOM.body).append('<p>Webpack</p>');
 // $(DOM.body).addClass('__block');
 // $(DOM.body).css('background-color', '#ffd200');
-
-// document.addEventListener('DOMContentLoaded', function () {
-//   console.log('test');
-// });
 
 (() => {
   let yOffset = 0; // window.pageYOffset 대신 쓸 변수
@@ -31,9 +27,15 @@ require('./assets/scss/index.scss'); //sass 연결
         messageA: document.querySelector('#scroll-section-0 .main-message.a'),
         messageB: document.querySelector('#scroll-section-0 .main-message.b'),
         messageC: document.querySelector('#scroll-section-0 .main-message.c'),
-        messageD: document.querySelector('#scroll-section-0 .main-message.d')
+        messageD: document.querySelector('#scroll-section-0 .main-message.d'),
+        canvas: document.querySelector('#video-canvas-0'),
+        context: document.querySelector('#video-canvas-0').getContext('2d'),
+        videoImages: []
       },
       values: {
+        videoImageCount: 300, // 이미지 갯수
+        imageSequence: [0, 299], // image sequence는 0번부터 299번까지
+        canvas_opacity: [1, 0, { start: 0.9, end: 1 }],
         // message에 어떤 값을 줄 것인지 설정
         // 시작과 끝나는 opacity 값을 넣어주었다, 객체 start, end는 비율로 넣었기 때문에 소숫점으로 처리
         messageA_opacity_in: [0, 1, { start: 0.1, end: 0.2 }], // 0.1 ~ 0.2 에 나타나고
@@ -55,9 +57,8 @@ require('./assets/scss/index.scss'); //sass 연결
       }
     },
     {
-      // 1
       type: 'normal',
-      // heightNum: 5, // type normal에서는 필요없어서 주석처리
+      // heightNum: 5, // type normal에서는 필요없어서 주석 처리
       scrollHeight: 0,
       objs: {
         container: document.querySelector('#scroll-section-1'),
@@ -65,7 +66,6 @@ require('./assets/scss/index.scss'); //sass 연결
       }
     },
     {
-      // 2
       type: 'sticky',
       heightNum: 5,
       scrollHeight: 0,
@@ -75,9 +75,16 @@ require('./assets/scss/index.scss'); //sass 연결
         messageB: document.querySelector('#scroll-section-2 .b'),
         messageC: document.querySelector('#scroll-section-2 .c'),
         pinB: document.querySelector('#scroll-section-2 .b .pin'),
-        pinC: document.querySelector('#scroll-section-2 .c .pin')
+        pinC: document.querySelector('#scroll-section-2 .c .pin'),
+        canvas: document.querySelector('#video-canvas-1'),
+        context: document.querySelector('#video-canvas-1').getContext('2d'),
+        videoImages: []
       },
       values: {
+        videoImageCount: 960, // 이미지 갯수
+        imageSequence: [0, 959], // image sequence는 0번부터 959번까지
+        canvas_opacity_in: [0, 1, { start: 0, end: 0.1 }],
+        canvas_opacity_out: [1, 0, { start: 0.95, end: 1 }],
         messageA_translateY_in: [20, 0, { start: 0.15, end: 0.2 }],
         messageB_translateY_in: [30, 0, { start: 0.5, end: 0.55 }],
         messageC_translateY_in: [30, 0, { start: 0.72, end: 0.77 }],
@@ -99,21 +106,39 @@ require('./assets/scss/index.scss'); //sass 연결
       }
     },
     {
-      // 3
       type: 'sticky',
       heightNum: 5,
       scrollHeight: 0,
       objs: {
         container: document.querySelector('#scroll-section-3'),
         canvasCaption: document.querySelector('.canvas-caption')
-    },
-    values: {
+      },
+      values: {
 
-    }
+      }
     }
   ];
 
-  // Layout setting function
+  // canvas image setting
+  function setCanvasImages() {
+    let imgElem;
+    for (let i = 0; i < sceneInfo[0].values.videoImageCount; i++) {
+      imgElem = document.createElement('img');
+      imgElem.src = `./assets/video/001/IMG_${6726 + i}.JPG`;
+      sceneInfo[0].objs.videoImages.push(imgElem);
+    }
+
+    let imgElem2;
+    for (let i = 0; i < sceneInfo[2].values.videoImageCount; i++) {
+      imgElem2 = document.createElement('img');
+      imgElem2.src = `./assets/video/002/IMG_${7027 + i}.JPG`;
+      sceneInfo[2].objs.videoImages.push(imgElem2);
+    }
+  }
+
+  setCanvasImages();
+
+  // Layout setting
   function setLayout() {
     // 각 스크롤 섹션의 height setting
     for (let i = 0; i < sceneInfo.length; i++) {
@@ -140,6 +165,12 @@ require('./assets/scss/index.scss'); //sass 연결
     }
 
     document.body.setAttribute('id', `show-scene-${currentScene}`);
+
+    // 원래 캔버스의 height 나누기 window.innerHeight 를 하면
+    // 1080 대비 윈도우 창 높이의 비율을 계산
+    const heightRatio = window.innerHeight / 1080;
+    sceneInfo[0].objs.canvas.style.transform = `translate3d(-50%, -50%, 0) scale(${heightRatio})`;
+    sceneInfo[2].objs.canvas.style.transform = `translate3d(-50%, -50%, 0) scale(${heightRatio})`;
   }
 
   /**
@@ -184,6 +215,10 @@ require('./assets/scss/index.scss'); //sass 연결
 
     switch (currentScene) {
       case 0:
+        let sequence = Math.round(calcValues(values.imageSequence, currentYOffset));
+        objs.context.drawImage(objs.videoImages[sequence], 0, 0); // canvas에 image들을 x:0, y:0 좌표로 넣어 줄 것이다.
+        objs.canvas.style.opacity = calcValues(values.canvas_opacity, currentYOffset);
+
         if (scrollRatio <= 0.22) {
 					// in
 					objs.messageA.style.opacity = calcValues(values.messageA_opacity_in, currentYOffset);
@@ -226,6 +261,17 @@ require('./assets/scss/index.scss'); //sass 연결
         
         break;
       case 2:
+        let sequence2 = Math.round(calcValues(values.imageSequence, currentYOffset));
+        objs.context.drawImage(objs.videoImages[sequence2], 0, 0); // canvas에 image들을 x:0, y:0 좌표로 넣어 줄 것이다.
+
+        if (scrollRatio <= 0.5) {
+          // in
+          objs.canvas.style.opacity = calcValues(values.canvas_opacity_in, currentYOffset);
+        } else {
+          // out
+          objs.canvas.style.opacity = calcValues(values.canvas_opacity_out, currentYOffset);
+        }
+
         if (scrollRatio <= 0.25) {
           // in
           objs.messageA.style.opacity = calcValues(values.messageA_opacity_in, currentYOffset);
@@ -298,7 +344,10 @@ require('./assets/scss/index.scss'); //sass 연결
     scrollLoop();
   });
   // window.addEventListener('DOMContentLoaded', setLayout); // DOM 만 읽어도 실행 됨
-  window.addEventListener('load', setLayout); // 이미지까지 load 돼야 실행 됨, 우리는 이미지 크기가 컨텐츠에 영향을 미치니까 load로 사용
+  window.addEventListener('load', () => { // 이미지까지 load 돼야 실행 됨, 우리는 이미지 크기가 컨텐츠에 영향을 미치니까 load로 사용
+    setLayout();
+    sceneInfo[0].objs.context.drawImage(sceneInfo[0].objs.videoImages[0], 0, 0); // 로드했을 때 첫 이미지만 로드 시켜줄 거기 때문에 videoImages[0]으로 
+  }); 
   window.addEventListener('resize', setLayout);
 
   setLayout();
