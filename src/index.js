@@ -124,6 +124,10 @@ require('./assets/scss/index.scss');
         // 미리 정할 수 없는 값들이기 때문에 초기 값은 0으로 셋팅
         rect1X: [ 0, 0, { start: 0, end: 0 } ],
         rect2X: [ 0, 0, { start: 0, end: 0 } ],
+        blendHeight: [ 0, 0, { start: 0, end: 0 } ],
+        canvas_scale: [ 0, 0, { start: 0, end: 0 } ],
+        canvasCaption_opacity: [0, 1, { start: 0, end: 0 }],
+        canvasCaption_translateY: [20, 0, { start: 0, end: 0 }],
         // 박스의 애니메이션이 시작되는 지점의 Y의 위치
         rectStartY: 0
       }
@@ -430,12 +434,58 @@ require('./assets/scss/index.scss');
         if (scrollRatio < values.rect1X[2].end) {
           // step 1: 캔버스 닿기 전
           step = 1;
+
           objs.canvas.classList.remove('sticky');
         } else {
-          // step 2: 캔버스 닿은 후 이미지 블렌드
+          // step 2: 캔버스 닿은 후 이미지 블렌딩
           step = 2;
+
+          // 이미지 블렌드
+          values.blendHeight[0] = 0; // 시작 height
+          values.blendHeight[1] = objs.canvas.height; // 목표 height는 첫번째 canvas height 만큼
+          values.blendHeight[2].start = values.rect1X[2].end; // 이미지 블렌드의 시작점은 첫번째 canvas의 end 지점이다
+          values.blendHeight[2].end = values.blendHeight[2].start + 0.2; // start 지점으로 부터 20% 동안 처리
+          
+          const blendHeight = calcValues(values.blendHeight, currentYOffset);
+
+          // drawImage arguments 순서
+          // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage
+          objs.context.drawImage(objs.images[1], 
+            0, objs.canvas.height - blendHeight, objs.canvas.width, blendHeight,
+            0, objs.canvas.height - blendHeight, objs.canvas.width, blendHeight
+          );
+
           objs.canvas.classList.add('sticky');
           objs.canvas.style.top = `${-(objs.canvas.height - objs.canvas.height * canvasScaleRatio) / 2}px`;
+
+          // 이미지 블렌드가 end 지점에 닿았을 때 
+          if (scrollRatio > values.blendHeight[2].end) {
+            values.canvas_scale[0] = canvasScaleRatio; // 해상도에 따라 적용됐던 scale 값을 가져 와서 초기 값으로 셋팅
+            values.canvas_scale[1] = document.body.offsetWidth / (1.5 * objs.canvas.width);
+            values.canvas_scale[2].start = values.blendHeight[2].end;
+            values.canvas_scale[2].end = values.canvas_scale[2].start + 0.2; // start 지점으로 부터 20% 값으로 end 지점을 적용
+
+            objs.canvas.style.transform = `scale(${calcValues(values.canvas_scale, currentYOffset)})`;
+            objs.canvas.style.marginTop = 0;
+          }
+
+          // 위에서 values.canvas_scale[2].end 값을 셋팅해 준 후 0 보다 커졌을 때 동작하도록
+          // scale end 지점에 도달했을 때 실행
+          if (scrollRatio > values.canvas_scale[2].end && values.canvas_scale[2].end > 0) {
+            objs.canvas.classList.remove('sticky');
+
+            // values.blendHeight[2].end = values.blendHeight[2].start + 0.2;
+            // values.canvas_scale[2].end = values.canvas_scale[2].start + 0.2;
+            // 이렇게 위에서 총 두번의 20% 스크롤 값을 지정해줬었기 때문에 0.4(40%) 값을 준 것임
+            objs.canvas.style.marginTop = `${scrollHeight * 0.4}px`; 
+
+            values.canvasCaption_opacity[2].start = values.canvas_scale[2].end;
+            values.canvasCaption_opacity[2].end = values.canvasCaption_opacity[2].start + 0.1; // start 지점으로 부터 0.1(10%)
+            values.canvasCaption_translateY[2].start = values.canvasCaption_opacity[2].start;
+            values.canvasCaption_translateY[2].end = values.canvasCaption_opacity[2].end;
+            objs.canvasCaption.style.opacity = calcValues(values.canvasCaption_opacity, currentYOffset);
+            objs.canvasCaption.style.transform = `translate3d(0, ${calcValues(values.canvasCaption_translateY, currentYOffset)}%, 0)`;
+          }
         }
         
         break;
