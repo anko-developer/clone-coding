@@ -1,5 +1,10 @@
 // global nav
 .global-nav {
+  z-index: 10;
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
   height: 44px;
   padding: 0 1.4rem;
 }
@@ -19,6 +24,11 @@
 
 // local nav
 .local-nav {
+  z-index: 11;
+  position: absolute;
+  top: 45px;
+  right: 0;
+  left: 0;
   height: 52px;
   padding: 0 1.4rem;
   border-bottom: 1px solid #ddd;
@@ -42,11 +52,15 @@
 
 // contents
 .scroll-section {
+  position: relative;
   padding-top: 50vh;
 }
 
 #scroll-section-0 {
   h1 {
+    z-index: 5;
+    position: relative;
+    top: -10vh;
     font-size: 5.6rem;
     text-align: center;
   }
@@ -56,9 +70,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  top: 35vh;
   height: 3em;
   margin: 5px 0;
   font-size: 3.5rem;
+  opacity: 0;
 
   p {
     font-weight: 700;
@@ -88,13 +104,26 @@
   }
 }
 
-#scroll-section2 .main-message {
-  font-size: 4.9rem;
+#scroll-section-2 {
+  .main-message {
+    font-size: 4.9rem;
+  }
+
+  .b {
+    top: 10%;
+    left: 40%;
+  }
+
+  .c {
+    top: 15%;
+    left: 45%;
+  }
 }
 
 .desc-message {
   width: 50%;
   font-weight: 700;
+  opacity: 0;
 }
 
 .pin {
@@ -131,6 +160,51 @@
   background-color: darkorange;
 }
 
+// sticky
+.sticky-elem {
+  display: none;
+  position: fixed;
+  // top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.sticky-elem-canvas {
+  top: 0;
+  height: 100%;
+
+  canvas {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    // transform: translate(-50%, -50%); index.js에서 같이 처리
+  }
+}
+
+.image-blend-canvas {
+  &.sticky {
+    z-index: 10;
+    position: fixed;
+    top: 0;
+  }
+}
+
+body {
+  &#show-scene-0 #scroll-section-0 .sticky-elem,
+  &#show-scene-1 #scroll-section-1 .sticky-elem,
+  &#show-scene-2 #scroll-section-2 .sticky-elem,
+  &#show-scene-3 #scroll-section-3 .sticky-elem {
+    display: block;
+  }
+}
+
+#scroll-section-3 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 @media (min-width: 1024px) {
   #scroll-section-0 {
     h1 {
@@ -153,6 +227,15 @@
   #scroll-section-2 {
     .main-message {
       font-size: 6vw;
+    }
+
+    .b {
+      top: 20%;
+      left: 53%;
+    }
+  
+    .c {
+      left: 55%;
     }
 
     small {
