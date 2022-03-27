@@ -7,3 +7,6 @@ node_modules
 package-lock.json
 
 *.map
+
+# video image
+src/assets/video
