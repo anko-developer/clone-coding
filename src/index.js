@@ -160,6 +160,14 @@ require('./assets/scss/index.scss');
 
   setCanvasImages();
 
+  function checkMenu() {
+    if (yOffset > 44) {
+      document.body.classList.add('local-nav-sticky');
+    } else {
+      document.body.classList.remove('local-nav-sticky');
+    }
+  }
+
   // Layout setting
   function setLayout() {
     // 각 스크롤 섹션의 height setting
@@ -522,6 +530,7 @@ require('./assets/scss/index.scss');
   window.addEventListener('scroll', () => {
     yOffset = window.pageYOffset;
     scrollLoop();
+    checkMenu();
   });
   // window.addEventListener('DOMContentLoaded', setLayout); // DOM 만 읽어도 실행 됨
   window.addEventListener('load', () => { // 이미지까지 load 돼야 실행 됨, 우리는 이미지 크기가 컨텐츠에 영향을 미치니까 load로 사용
