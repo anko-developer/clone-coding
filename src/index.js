@@ -123,7 +123,9 @@ require('./assets/scss/index.scss');
       values: {
         // 미리 정할 수 없는 값들이기 때문에 초기 값은 0으로 셋팅
         rect1X: [ 0, 0, { start: 0, end: 0 } ],
-        rect2X: [ 0, 0, { start: 0, end: 0 } ]
+        rect2X: [ 0, 0, { start: 0, end: 0 } ],
+        // 박스의 애니메이션이 시작되는 지점의 Y의 위치
+        rectStartY: 0
       }
     }
   ];
@@ -321,9 +323,53 @@ require('./assets/scss/index.scss');
           objs.messageC.style.opacity = calcValues(values.messageC_opacity_out, currentYOffset);
           objs.pinC.style.transform = `scaleY(${calcValues(values.pinC_scaleY, currentYOffset)})`;
         }
+
+        // 3번 currentScene으로 가기 전에 미리 canvas를 그려주기 위해 case 3 소스를 복사해서 가져왔음
+        // 스크롤 값이 0.9(90% 위치)쯤 도달 했을 때 처리 해줄 것임
+        if (scrollRatio > 0.9) {
+          const objs = sceneInfo[3].objs;
+          const values = sceneInfo[3].values;
+          const widthRatio = window.innerWidth / objs.canvas.width;
+          const heightRatio = window.innerHeight / objs.canvas.height;
+          let canvasScaleRatio;
+          
+          if (widthRatio <= heightRatio) {
+            canvasScaleRatio = heightRatio;
+          } else {
+            canvasScaleRatio = widthRatio;
+          }
+
+          objs.canvas.style.transform = `scale(${canvasScaleRatio})`;
+          objs.context.fillStyle = '#fff';
+          objs.context.drawImage(objs.images[0], 0, 0);
+
+          const recalculatedInnerWidth = document.body.offsetWidth / canvasScaleRatio; 
+          const recalculatedInnerHeight = window.innerHeight / canvasScaleRatio;
+
+          const whiteRectWidth = recalculatedInnerWidth * 0.15;
+          values.rect1X[0] = (objs.canvas.width - recalculatedInnerWidth) / 2;
+          values.rect1X[1] = values.rect1X[0] - whiteRectWidth;
+          values.rect2X[0] = values.rect1X[0] + recalculatedInnerWidth - whiteRectWidth;
+          values.rect2X[1] = values.rect2X[0] + whiteRectWidth;
+
+          objs.context.fillRect(
+            parseInt(values.rect1X[0]),
+            0,
+            parseInt(whiteRectWidth),
+            objs.canvas.height
+          );
+          objs.context.fillRect(
+            parseInt(values.rect2X[0]),
+            0,
+            parseInt(whiteRectWidth),
+            objs.canvas.height
+          );
+        }
+
         break;
       case 3:
-        // width/height n모두 꽉 차게 하기 위해서 여기서 setting(계산 필요)
+        let step = 0;
+        // width/height 모두 꽉 차게 하기 위해서 여기서 setting(계산 필요)
         const widthRatio = window.innerWidth / objs.canvas.width;
         const heightRatio = window.innerHeight / objs.canvas.height;
         let canvasScaleRatio;
@@ -338,12 +384,28 @@ require('./assets/scss/index.scss');
         }
 
         objs.canvas.style.transform = `scale(${canvasScaleRatio})`;
+        objs.context.fillStyle = '#fff';
         objs.context.drawImage(objs.images[0], 0, 0);
 
         // 캔버스 사이즈에 맞춰 다시 계산된 innerWidth와 innerHeight
-        const recalculatedInnerWidth = window.innerWidth / canvasScaleRatio;
+        // window.innerWidth는 브라우저의 스크롤 바 width 값까지 계산하기 때문에 
+        // document.body.offsetWidth 로 계산 해줬음
+        const recalculatedInnerWidth = document.body.offsetWidth / canvasScaleRatio; 
         const recalculatedInnerHeight = window.innerHeight / canvasScaleRatio;
-        
+
+        // 요소의 위치 값을 얻을 수 있는 함수 getBoundingClientRect를 사용하면 쉽지만, 
+        // 빠르게 스크롤 값이 바뀔 때 일시적으로 값이 바뀌기 때문에 사용하지 않았다.
+        if (!values.rectStartY) {
+          // 알아두기) 부모 요소의 position 이 static이 아닌 값이 되면 부모 기준으로 offsetTop 값을 잡을 수 있다.
+          // objs.canvas.style.transform = `scale(${canvasScaleRatio})`; 이렇게 계산 된 scale 값에 맞춰서 offsetTop 값을 다시 구해줘야 한다.
+          values.rectStartY = objs.canvas.offsetTop + (objs.canvas.height - objs.canvas.height * canvasScaleRatio) / 2;
+          
+          values.rect1X[2].start = (window.innerHeight / 2) / scrollHeight;
+					values.rect2X[2].start = (window.innerHeight / 2) / scrollHeight;
+					values.rect1X[2].end = values.rectStartY / scrollHeight;
+					values.rect2X[2].end = values.rectStartY / scrollHeight;
+        }
+
         const whiteRectWidth = recalculatedInnerWidth * 0.15; // 다시 계산 된 width에 0.15배로 비율 잡아준 것임, 디자인에 따라 바꿔주면 됨
         values.rect1X[0] = (objs.canvas.width - recalculatedInnerWidth) / 2; // 원래 캔버스 width에서 다시 계산 된 width를 뺀 값에서 2로 나눠 줌
         values.rect1X[1] = values.rect1X[0] - whiteRectWidth;
@@ -352,9 +414,30 @@ require('./assets/scss/index.scss');
 
         // 좌우 흰색 박스 그리기
         // fillRect는 canvas에서 사각형으로 그리는 함수 (x 좌표값, y 좌표값, width, height)
-        objs.context.fillRect(values.rect1X[0], 0, parseInt(whiteRectWidth), objs.canvas.height);
-        objs.context.fillRect(values.rect2X[0], 0, parseInt(whiteRectWidth), objs.canvas.height);
-
+				objs.context.fillRect(
+					parseInt(calcValues(values.rect1X, currentYOffset)),
+					0,
+					parseInt(whiteRectWidth),
+					objs.canvas.height
+				);
+				objs.context.fillRect(
+					parseInt(calcValues(values.rect2X, currentYOffset)),
+					0,
+					parseInt(whiteRectWidth),
+					objs.canvas.height
+        );
+        
+        if (scrollRatio < values.rect1X[2].end) {
+          // step 1: 캔버스 닿기 전
+          step = 1;
+          objs.canvas.classList.remove('sticky');
+        } else {
+          // step 2: 캔버스 닿은 후 이미지 블렌드
+          step = 2;
+          objs.canvas.classList.add('sticky');
+          objs.canvas.style.top = `${-(objs.canvas.height - objs.canvas.height * canvasScaleRatio) / 2}px`;
+        }
+        
         break;
     }
   }
