@@ -9,6 +9,7 @@ _Hi, introduce the repository._
 
 1. [Clean Coding](#clean-coding)
 1. [Repo Name](#repository-name)
+1. [requestAnimationFrame](#requestAnimationFrame)
 
 ## Clean Coding
 
@@ -30,6 +31,40 @@ _Hi, introduce the repository._
 - 대시(-)를 사용해라 (use dashes)
 - 명확하게 작성해라 (be specific)
 - 일관성있게 작성해라 (be consistent)
+
+## requestAnimationFrame
+> animation에는 부드러운 감속 패턴을 사용
+
+- requestAnimationFrame: 1초에 60프레임을 그려준다.
+- cancelAnimationFrame: 계속 반복되고 있는 requestAnimationFrame를 정지 시킨다.
+
+```javascript
+const box = document.querySelector('.box');
+let acc = 0.1
+let delayedYOffset = 0;
+let rafId;
+let rafState;
+
+window.addEventListener('scroll', () => {
+  if (!rafState) {
+    rafId = requestAnimationFrame(loop);
+    rafState = true;
+  }
+});
+
+function loop() {
+  delayedYOffset = delayedYOffset + (window.pageYOffset - delayedYOffset) * acc;
+  box.style.width = `${delatedYOffset}px`;
+  console.log('loop');
+
+  rafId = requestAnimationFrame(loop);
+
+  if (Math.abs(window.pageYOffset - delayedYOffset) < 1) {
+    cancelAnimationFrame(raid);
+    rafState = false;
+  }
+}
+```
 
 **[⬆ back to top](#table-of-contents)**
 
