@@ -60,7 +60,7 @@ function loop() {
   rafId = requestAnimationFrame(loop);
 
   if (Math.abs(window.pageYOffset - delayedYOffset) < 1) {
-    cancelAnimationFrame(raid);
+    cancelAnimationFrame(rafId);
     rafState = false;
   }
 }
