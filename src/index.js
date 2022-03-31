@@ -13,6 +13,12 @@ require('./assets/scss/index.scss');
   let preScrollHeight = 0; // 현재 스크롤 위치(yOffset)보다 이전에 위치한 스크롤 섹션들의 스크롤 높이 값의 합
   let currentScene = 0; // 현재 활성화 된(눈 앞에 보고있는) 씬(scroll-section)
   let enterNewScene = false; // 새로운 scene이 시작된 순간 true
+  
+  // requestAnimationFrame에서 사용할 변수들
+  let acc = 0.1 // 가속도
+  let delayedYOffset = 0;
+  let rafId;
+  let rafState;
 
   // scroll scene에 대한 정보를 객체에 담는다
   const sceneInfo = [
@@ -158,8 +164,6 @@ require('./assets/scss/index.scss');
     }
   }
 
-  setCanvasImages();
-
   function checkMenu() {
     if (yOffset > 44) {
       document.body.classList.add('local-nav-sticky');
@@ -245,8 +249,8 @@ require('./assets/scss/index.scss');
 
     switch (currentScene) {
       case 0:
-        let sequence = Math.round(calcValues(values.imageSequence, currentYOffset));
-        objs.context.drawImage(objs.videoImages[sequence], 0, 0); // canvas에 image들을 x:0, y:0 좌표로 넣어 줄 것이다.
+        // let sequence = Math.round(calcValues(values.imageSequence, currentYOffset));
+        // objs.context.drawImage(objs.videoImages[sequence], 0, 0); // canvas에 image들을 x:0, y:0 좌표로 넣어 줄 것이다.
         objs.canvas.style.opacity = calcValues(values.canvas_opacity, currentYOffset);
 
         if (scrollRatio <= 0.22) {
@@ -291,8 +295,8 @@ require('./assets/scss/index.scss');
         
         break;
       case 2:
-        let sequence2 = Math.round(calcValues(values.imageSequence, currentYOffset));
-        objs.context.drawImage(objs.videoImages[sequence2], 0, 0); // canvas에 image들을 x:0, y:0 좌표로 넣어 줄 것이다.
+        // let sequence2 = Math.round(calcValues(values.imageSequence, currentYOffset));
+        // objs.context.drawImage(objs.videoImages[sequence2], 0, 0); // canvas에 image들을 x:0, y:0 좌표로 넣어 줄 것이다.
 
         if (scrollRatio <= 0.5) {
           // in
@@ -508,13 +512,13 @@ require('./assets/scss/index.scss');
       preScrollHeight += sceneInfo[i].scrollHeight;
     }
 
-    if (yOffset > preScrollHeight + sceneInfo[currentScene].scrollHeight) {
+    if (delayedYOffset > preScrollHeight + sceneInfo[currentScene].scrollHeight) {
       enterNewScene = true;
       currentScene++;
       document.body.setAttribute('id', `show-scene-${currentScene}`);
     }
 
-    if (yOffset < preScrollHeight) {
+    if (delayedYOffset < preScrollHeight) {
       enterNewScene = true;
       if (currentScene === 0) return; // 모바일에서 스크롤 바운드 때 -1 값으로 넘어갈 수도 있기 때문에 처리
       currentScene--;
@@ -527,17 +531,53 @@ require('./assets/scss/index.scss');
     playAnimation();
   }
 
+  function loop() {
+    delayedYOffset = delayedYOffset + (yOffset - delayedYOffset) * acc;
+    if (!enterNewScene) {
+      if (currentScene === 0 || currentScene === 2) {
+        const currentYOffset = delayedYOffset - preScrollHeight; // delayedYOffset - 활성된 이전 scene들의 총 height 값을 빼주면 활성된 scene에서 얼마나 스크롤 됐는지 계산 됨
+        const objs = sceneInfo[currentScene].objs;
+        const values = sceneInfo[currentScene].values;
+        let sequence = Math.round(calcValues(values.imageSequence, currentYOffset));
+        if (objs.videoImages[sequence]) {
+          objs.context.drawImage(objs.videoImages[sequence], 0, 0);
+        }
+      }
+    }
+    
+    rafId = requestAnimationFrame(loop);
+  
+    if (Math.abs(yOffset - delayedYOffset) < 1) {
+      cancelAnimationFrame(rafId);
+      rafState = false;
+    }
+  }
+
   window.addEventListener('scroll', () => {
     yOffset = window.pageYOffset;
     scrollLoop();
     checkMenu();
+
+    if (!rafState) {
+      rafId = requestAnimationFrame(loop);
+      rafState = true;
+    }
   });
   // window.addEventListener('DOMContentLoaded', setLayout); // DOM 만 읽어도 실행 됨
   window.addEventListener('load', () => { // 이미지까지 load 돼야 실행 됨, 우리는 이미지 크기가 컨텐츠에 영향을 미치니까 load로 사용
     setLayout();
     sceneInfo[0].objs.context.drawImage(sceneInfo[0].objs.videoImages[0], 0, 0); // 로드했을 때 첫 이미지만 로드 시켜줄 거기 때문에 videoImages[0]으로 
   }); 
-  window.addEventListener('resize', setLayout);
 
-  setLayout();
+  window.addEventListener('resize', () => {
+    // 모바일에서는 resize가 필요 없으니까 안전하게 600 사이즈 이상일때만 함수가 동작하도록
+    if (window.innerWidth > 600) {
+      setLayout();
+    }
+    sceneInfo[3].values.rectStartY = 0; // resize 했을 때 rectStartY를 0으로 초기화 해주면 playAnimation()에서 다시 계산할 것이다
+  });
+
+  window.addEventListener('orientationchange', setLayout); // 모바일을 가로 세로 화면 전환했을 때의 이벤트가 orientationchange 다.
+
+  setCanvasImages();
 })();
