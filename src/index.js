@@ -574,6 +574,7 @@ require('./assets/scss/index.scss');
     if (window.innerWidth > 600) {
       setLayout();
     }
+    
     sceneInfo[3].values.rectStartY = 0; // resize 했을 때 rectStartY를 0으로 초기화 해주면 playAnimation()에서 다시 계산할 것이다
   });
 
