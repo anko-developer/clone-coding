@@ -565,6 +565,8 @@ require('./assets/scss/index.scss');
   });
   // window.addEventListener('DOMContentLoaded', setLayout); // DOM 만 읽어도 실행 됨
   window.addEventListener('load', () => { // 이미지까지 load 돼야 실행 됨, 우리는 이미지 크기가 컨텐츠에 영향을 미치니까 load로 사용
+    document.body.classList.remove('before-load'); // load가 되고 loading-circle를 나타내주는 클래스 제거
+
     setLayout();
     sceneInfo[0].objs.context.drawImage(sceneInfo[0].objs.videoImages[0], 0, 0); // 로드했을 때 첫 이미지만 로드 시켜줄 거기 때문에 videoImages[0]으로 
   }); 
@@ -579,6 +581,9 @@ require('./assets/scss/index.scss');
   });
 
   window.addEventListener('orientationchange', setLayout); // 모바일을 가로 세로 화면 전환했을 때의 이벤트가 orientationchange 다.
+  document.querySelector('.loading').addEventListener('transitionend', (e) => {  // transition 이 끝났을 때의 이벤트
+    document.body.removeChild(e.currentTarget); // currentTarget 를 이용해서 addEventListener를 호출한 객체 자체에 접근
+  });
 
   setCanvasImages();
 })();
