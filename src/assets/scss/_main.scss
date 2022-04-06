@@ -1,3 +1,5 @@
+@charset 'utf-8';
+
 // global nav
 .global-nav {
   z-index: 10;
@@ -213,6 +215,10 @@ body {
 }
 
 // loading
+.before-load {
+  overflow: hidden;
+}
+
 .loading {
   z-index: 100;
   display: flex;
