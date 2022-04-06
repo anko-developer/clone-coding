@@ -512,9 +512,19 @@ require('./assets/scss/index.scss');
       preScrollHeight += sceneInfo[i].scrollHeight;
     }
 
+    if (delayedYOffset < preScrollHeight + sceneInfo[currentScene].scrollHeight) {
+      document.body.classList.remove('scroll-effect-end');
+    }
+
     if (delayedYOffset > preScrollHeight + sceneInfo[currentScene].scrollHeight) {
       enterNewScene = true;
-      currentScene++;
+      if (currentScene === sceneInfo.length - 1) {
+        document.body.classList.add('scroll-effect-end');
+      }
+      
+      if (currentScene < sceneInfo.length - 1) {
+        currentScene++;
+      }
       document.body.setAttribute('id', `show-scene-${currentScene}`);
     }
 
@@ -553,37 +563,63 @@ require('./assets/scss/index.scss');
     }
   }
 
-  window.addEventListener('scroll', () => {
-    yOffset = window.pageYOffset;
-    scrollLoop();
-    checkMenu();
-
-    if (!rafState) {
-      rafId = requestAnimationFrame(loop);
-      rafState = true;
-    }
-  });
+  
   // window.addEventListener('DOMContentLoaded', setLayout); // DOM 만 읽어도 실행 됨
   window.addEventListener('load', () => { // 이미지까지 load 돼야 실행 됨, 우리는 이미지 크기가 컨텐츠에 영향을 미치니까 load로 사용
     document.body.classList.remove('before-load'); // load가 되고 loading-circle를 나타내주는 클래스 제거
 
     setLayout();
     sceneInfo[0].objs.context.drawImage(sceneInfo[0].objs.videoImages[0], 0, 0); // 로드했을 때 첫 이미지만 로드 시켜줄 거기 때문에 videoImages[0]으로 
-  }); 
 
-  window.addEventListener('resize', () => {
-    // 모바일에서는 resize가 필요 없으니까 안전하게 600 사이즈 이상일때만 함수가 동작하도록
-    if (window.innerWidth > 600) {
-      setLayout();
+    // 새로고침 했을 때 scroll event가 돌아가야 동작하는 기능들이 있기 때문에
+    // 중간 위치에서 window load 되었을 때 현재 위치를 가져와서 스크롤이 조금 진행되게 만드는 것
+    let tempYOffset = yOffset;
+    let tempScrollCount = 0;
+    if (yOffset > 0) {
+      let siId = setInterval(() => {
+        window.scrollTo(0, tempYOffset);
+        tempYOffset += 5;
+        
+        if (tempScrollCount > 20) {
+          clearInterval(siId);
+        }
+  
+        ++tempScrollCount;
+      }, 20);
     }
     
-    sceneInfo[3].values.rectStartY = 0; // resize 했을 때 rectStartY를 0으로 초기화 해주면 playAnimation()에서 다시 계산할 것이다
-  });
+    window.addEventListener('scroll', () => {
+      yOffset = window.pageYOffset;
+      scrollLoop();
+      checkMenu();
+  
+      if (!rafState) {
+        rafId = requestAnimationFrame(loop);
+        rafState = true;
+      }
+    });
 
-  window.addEventListener('orientationchange', setLayout); // 모바일을 가로 세로 화면 전환했을 때의 이벤트가 orientationchange 다.
-  document.querySelector('.loading').addEventListener('transitionend', (e) => {  // transition 이 끝났을 때의 이벤트
-    document.body.removeChild(e.currentTarget); // currentTarget 를 이용해서 addEventListener를 호출한 객체 자체에 접근
-  });
+    window.addEventListener('resize', () => {
+      // 모바일에서는 resize가 필요 없으니까 안전하게 900 사이즈 이상일때만 함수가 동작하도록
+      // tip) ios safari에서 스크롤 할 때 브라우저 주소창 활성/비활성이 되는데 그럴때도 resize가 발생함
+      if (window.innerWidth > 900) {
+        window.location.reload();
+        // setLayout();
+        // sceneInfo[3].values.rectStartY = 0; // resize 했을 때 rectStartY를 0으로 초기화 해주면 playAnimation()에서 다시 계산할 것이다
+      }
+    });
+
+    window.addEventListener('orientationchange', () => { // 모바일을 가로 세로 화면 전환했을 때의 이벤트가 orientationchange 다.
+      scrollTo(0, 0);
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    }); 
+
+    document.querySelector('.loading').addEventListener('transitionend', (e) => {  // transition 이 끝났을 때의 이벤트
+      document.body.removeChild(e.currentTarget); // currentTarget 를 이용해서 addEventListener를 호출한 객체 자체에 접근
+    });
+  }); 
 
   setCanvasImages();
 })();
