@@ -8,7 +8,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
-  mode: 'development', // webpack4에서 추가되었습니다. mode가 development면 개발용, production이면 배포용입니다. 배포용 일 경우에는 알아서 최적화가 적용됩니다. 따라서 기존 최적화플러그인들이 대량으로 호환되지 않습니다.
+  mode: 'development',
   entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, 'public'),
@@ -21,9 +21,7 @@ module.exports = {
     rules: [
       {
         test: /\.s[ac]ss$/i,
-        // mini-css-extract-plugin로 대체하여 sass를 내부 style로 번들시키지 않고 css 파일로 별도 분리시켜준다.
         use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader']
-        // exclude: /node_modules/
       },
       {
         test: /\.js$/,
@@ -35,6 +33,21 @@ module.exports = {
         type: 'asset',
         generator: {
           filename: 'assets/images/[name][ext]'
+        }
+      },
+      {
+        test: /\.html$/i,
+        loader: 'html-loader',
+        options: {
+          sources: {
+            list: [
+              {
+                tag: 'img',
+                attribute: 'src',
+                type: 'src'
+              }
+            ]
+          }
         }
       },
       {
@@ -56,7 +69,6 @@ module.exports = {
     new webpack.BannerPlugin({
       banner: `Study build time : ${new Date().toLocaleTimeString()}`
     }),
-    // 컴파일 + 번들링 CSS 파일이 저장될 경로와 이름 지정
     new MiniCssExtractPlugin({ filename: 'assets/css/style.css' }),
     new ImageMinimizerPlugin({
       minimizer: {
@@ -64,15 +76,12 @@ module.exports = {
         options: {
           encodeOptions: {
             mozjpeg: {
-              // That setting might be close to lossless, but it’s not guaranteed
-              // https://github.com/GoogleChromeLabs/squoosh/issues/85
               quality: 100
             },
             webp: {
               lossless: 1
             },
             avif: {
-              // https://github.com/GoogleChromeLabs/squoosh/blob/dev/codecs/avif/enc/README.md
               cqLevel: 0
             }
           }
@@ -82,7 +91,11 @@ module.exports = {
     new webpack.ProvidePlugin({
       $: 'jquery',
       jQuery: 'jquery'
-    })
+    }),
+    new HtmlWebpackPlugin({
+      title: 'main',
+      template: path.join(path.resolve(__dirname, 'src'), 'index.html')
+    }),
   ],
   devtool: 'source-map'
 };
