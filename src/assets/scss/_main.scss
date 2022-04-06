@@ -39,6 +39,8 @@
     position: fixed;
     top: 0;
     background: rgba(255, 255, 255, 0.1);
+    // ios에서는 아직 prefix를 붙여서 backdrop-filter를 사용해야 함
+    -webkit-backdrop-filter: saturate(180%) blur(15px);
     backdrop-filter: saturate(180%) blur(15px);
   }
 }
@@ -60,6 +62,15 @@
 }
 
 // contents
+.container {
+  // ios 가로스크롤 방지
+  overflow-x: hidden;
+
+  .before-load & {
+    display: none;
+  }
+}
+
 .scroll-section {
   position: relative;
   padding-top: 50vh;
@@ -155,7 +166,7 @@
 
 .canvas-caption {
   max-width: 1000px;
-  margin: -5em auto 0;
+  margin: -33.6rem auto 0;
   padding: 0 1.4rem;
   font-size: 1.7rem;
   color: #888;
@@ -205,13 +216,24 @@ body {
   &#show-scene-2 #scroll-section-2 .sticky-elem,
   &#show-scene-3 #scroll-section-3 .sticky-elem {
     display: block;
+    will-change: transform, opacity;
+  }
+
+  &.scroll-effect-end .sticky-elem {
+    display: none !important;
   }
 }
+
+
 
 #scroll-section-3 {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.normal-content {
+  margin-bottom: 14rem;
 }
 
 // loading
@@ -238,8 +260,18 @@ body {
   }
 }
 
+@-webkit-keyframes loading-spin {
+  100% { transform: rotate(360deg); }
+}
+
 @keyframes loading-spin {
   100% { transform: rotate(360deg); }
+}
+
+@-webkit-keyframes loading-circle-ani {
+  0% { stroke-dashoffset: 157; }
+  75% { stroke-dashoffset: -147; }
+  100% { stroke-dashoffset: -157; }
 }
 
 @keyframes loading-circle-ani {
@@ -251,7 +283,8 @@ body {
 .loading-circle {
   width: 54px;
   height: 54px;
-  animation: loading-spin 3s infinite;
+  -webkit-animation: loading-spin 3s infinite;
+          animation: loading-spin 3s infinite;
 
   circle {
     stroke: #000;
@@ -259,7 +292,8 @@ body {
     stroke-dasharray: 157; // document.querySelector('.loading-circle circle').getTotalLength()  로 dasharray 최대값을 알아낼 수 있다.
     stroke-dashoffset: 0;
     fill: transparent; // 색이 아예 안들어가면 none으로해도 무방
-    animation: loading-circle-ani 1s infinite;
+    -webkit-animation: loading-circle-ani 1s infinite;
+            animation: loading-circle-ani 1s infinite;
   }
 }
 
@@ -314,6 +348,7 @@ body {
   }
 
   .canvas-caption {
+    margin-top: -11.2rem;
     padding: 0;
     font-size: 2.8rem;
   }
